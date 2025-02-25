@@ -1,82 +1,37 @@
-import streamlit as st
+def print_board(board):
+    for i in range(0, 9, 3):
+        print(board[i], "|", board[i+1], "|", board[i+2])
+    print("\n")
 
-# Page Configuration
-st.set_page_config(page_title="🎮 Tic-Tac-Toe", page_icon="❌⭕", layout="centered")
-
-# Title
-st.title("🎮 Tic-Tac-Toe Game")
-st.write("Click a box to make your move!")
-
-# Initialize session state
-if "board" not in st.session_state:
-    st.session_state.board = [""] * 9
-    st.session_state.current_player = "X"
-    st.session_state.winner = None
-
-# Winning Combinations
-winning_combinations = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8],  # Rows
-    [0, 3, 6], [1, 4, 7], [2, 5, 8],  # Columns
-    [0, 4, 8], [2, 4, 6]  # Diagonals
-]
-
-# Function to check winner
-def check_winner():
+def check_winner(board):
+    winning_combinations = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+        [0, 4, 8], [2, 4, 6] 
+    ]
     for combo in winning_combinations:
-        a, b, c = combo
-        if (st.session_state.board[a] == 
-            st.session_state.board[b] == 
-            st.session_state.board[c] != ""):
-            st.session_state.winner = st.session_state.board[a]
-            return
+        if board[combo[0]] == board[combo[1]] == board[combo[2]] != " ":
+            return board[combo[0]]
+    return None
 
-# Button Click Function (One-Click Play)
-def button_click(index):
-    if st.session_state.board[index] == "" and not st.session_state.winner:
-        st.session_state.board[index] = st.session_state.current_player
-        check_winner()
-        if not st.session_state.winner:
-            st.session_state.current_player = "O" if st.session_state.current_player == "X" else "X"
+board = [" "] * 9
+player = "X"
 
-# Display the Tic Tac Toe Board with Stylish Buttons
-st.markdown("---")
-cols = st.columns(3)
-for i in range(9):
-    with cols[i % 3]:
-        btn_style = f"""
-        <style>
-            .stButton > button {{
-                width: 100px;
-                height: 100px;
-                font-size: 30px;
-                font-weight: bold;
-                color: black;
-                border-radius: 10px;
-                border: 2px solid #333;
-                background: #ddd;
-                transition: 0.3s;
-            }}
-            .stButton > button:hover {{
-                background: #bbb;
-            }}
-        </style>
-        """
-        st.markdown(btn_style, unsafe_allow_html=True)
-        if st.button(st.session_state.board[i] or " ", key=i):
-            button_click(i)
+while " " in board:
+    print_board(board)
+    move = int(input(f"Player {player}, choose your position (0-8): "))
+    
+    if board[move] == " ":
+        board[move] = player
+        winner = check_winner(board)
+        if winner:
+            print_board(board)
+            print(f"🎉 Player {winner} wins!")
+            break
+        player = "O" if player == "X" else "X"
+    else:
+        print("Invalid move, try again.")
 
-st.markdown("---")
-
-# Display Winner or Turn Announcement
-if st.session_state.winner:
-    st.success(f"🎉 Player {st.session_state.winner} wins!")
-else:
-    st.info(f"🔄 Player {st.session_state.current_player}'s turn")
-
-# Restart Button
-if st.button("🔄 Restart Game"):
-    st.session_state.board = [""] * 9
-    st.session_state.current_player = "X"
-    st.session_state.winner = None
-    st.experimental_rerun()
+if " " not in board and not winner:
+    print("It's a tie!")
 
