@@ -1,10 +1,11 @@
 import streamlit as st
 
 # Page Configuration
-st.set_page_config(page_title="Tic Tac Toe", page_icon="🎮")
+st.set_page_config(page_title="🎮 Tic-Tac-Toe", page_icon="❌⭕", layout="centered")
 
+# Title
 st.title("🎮 Tic-Tac-Toe Game")
-st.write("Click on the grid to play.")
+st.write("Click a box to make your move!")
 
 # Initialize session state
 if "board" not in st.session_state:
@@ -29,7 +30,7 @@ def check_winner():
             st.session_state.winner = st.session_state.board[a]
             return
 
-# Button Click Function
+# Button Click Function (One-Click Play)
 def button_click(index):
     if st.session_state.board[index] == "" and not st.session_state.winner:
         st.session_state.board[index] = st.session_state.current_player
@@ -37,17 +38,45 @@ def button_click(index):
         if not st.session_state.winner:
             st.session_state.current_player = "O" if st.session_state.current_player == "X" else "X"
 
-# Display the Tic Tac Toe Board
+# Display the Tic Tac Toe Board with Stylish Buttons
+st.markdown("---")
 cols = st.columns(3)
 for i in range(9):
     with cols[i % 3]:
+        btn_style = f"""
+        <style>
+            .stButton > button {{
+                width: 100px;
+                height: 100px;
+                font-size: 30px;
+                font-weight: bold;
+                color: black;
+                border-radius: 10px;
+                border: 2px solid #333;
+                background: #ddd;
+                transition: 0.3s;
+            }}
+            .stButton > button:hover {{
+                background: #bbb;
+            }}
+        </style>
+        """
+        st.markdown(btn_style, unsafe_allow_html=True)
         if st.button(st.session_state.board[i] or " ", key=i):
             button_click(i)
 
-# Display Winner
+st.markdown("---")
+
+# Display Winner or Turn Announcement
 if st.session_state.winner:
     st.success(f"🎉 Player {st.session_state.winner} wins!")
-    if st.button("Restart Game"):
-        st.session_state.board = [""] * 9
-        st.session_state.current_player = "X"
-        st.session_state.winner = None
+else:
+    st.info(f"🔄 Player {st.session_state.current_player}'s turn")
+
+# Restart Button
+if st.button("🔄 Restart Game"):
+    st.session_state.board = [""] * 9
+    st.session_state.current_player = "X"
+    st.session_state.winner = None
+    st.experimental_rerun()
+
