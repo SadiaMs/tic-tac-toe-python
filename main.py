@@ -1,58 +1,53 @@
-import tkinter as tk
-from tkinter import messagebox
+import streamlit as st
 
-# Initialize the game window
-root = tk.Tk()
-root.title("Tic Tac Toe")
+# Page Configuration
+st.set_page_config(page_title="Tic Tac Toe", page_icon="🎮")
 
-# Global Variables
-current_player = "X"
-winner = False
+st.title("🎮 Tic-Tac-Toe Game")
+st.write("Click on the grid to play.")
 
-# Function to check the winner
+# Initialize session state
+if "board" not in st.session_state:
+    st.session_state.board = [""] * 9
+    st.session_state.current_player = "X"
+    st.session_state.winner = None
+
+# Winning Combinations
+winning_combinations = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],  # Rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],  # Columns
+    [0, 4, 8], [2, 4, 6]  # Diagonals
+]
+
+# Function to check winner
 def check_winner():
-    global winner
-    winning_combinations = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],  # Rows
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],  # Columns
-        [0, 4, 8], [2, 4, 6]  # Diagonals
-    ]
-    
     for combo in winning_combinations:
-        if buttons[combo[0]]["text"] == buttons[combo[1]]["text"] == buttons[combo[2]]["text"] != "":
-            buttons[combo[0]].config(bg="green")
-            buttons[combo[1]].config(bg="green")
-            buttons[combo[2]].config(bg="green")
-            messagebox.showinfo("Result", f"Player {buttons[combo[0]]['text']} wins!")
-            winner = True
+        a, b, c = combo
+        if (st.session_state.board[a] == 
+            st.session_state.board[b] == 
+            st.session_state.board[c] != ""):
+            st.session_state.winner = st.session_state.board[a]
             return
 
-# Function to handle button clicks
+# Button Click Function
 def button_click(index):
-    global winner, current_player
-
-    if buttons[index]["text"] == "" and not winner:
-        buttons[index]["text"] = current_player
+    if st.session_state.board[index] == "" and not st.session_state.winner:
+        st.session_state.board[index] = st.session_state.current_player
         check_winner()
-        if not winner:
-            toggle_player()
+        if not st.session_state.winner:
+            st.session_state.current_player = "O" if st.session_state.current_player == "X" else "X"
 
-# Function to switch turns
-def toggle_player():
-    global current_player
-    current_player = "X" if current_player == "O" else "O"
-    label.config(text=f"Player {current_player}'s turn")
+# Display the Tic Tac Toe Board
+cols = st.columns(3)
+for i in range(9):
+    with cols[i % 3]:
+        if st.button(st.session_state.board[i] or " ", key=i):
+            button_click(i)
 
-# Create UI Elements
-label = tk.Label(root, text=f"Player {current_player}'s turn", font=("Arial", 15))
-label.grid(row=3, column=0, columnspan=3)
-
-buttons = [tk.Button(root, text="", font=("Arial", 25), width=6, height=2, 
-                     command=lambda i=i: button_click(i)) for i in range(9)]
-
-# Place buttons in a 3x3 grid
-for i, button in enumerate(buttons):
-    button.grid(row=i // 3, column=i % 3)
-
-# Run the game loop
-root.mainloop()
+# Display Winner
+if st.session_state.winner:
+    st.success(f"🎉 Player {st.session_state.winner} wins!")
+    if st.button("Restart Game"):
+        st.session_state.board = [""] * 9
+        st.session_state.current_player = "X"
+        st.session_state.winner = None
